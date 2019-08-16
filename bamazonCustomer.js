@@ -52,7 +52,7 @@ con.connect(function (err) {
                             }
                         ]).then(function (user) {
                             if (user.confirm === false) {
-                                console.log("No worries, come again soon!");
+                                console.log("Please come again soon!");
                                 process.exit();
                             }
                             if (user.confirm === true) {
@@ -60,13 +60,13 @@ con.connect(function (err) {
                                     console.log("Sorry, you dont have enough to buy this!");
                                     process.exit();
                                 }
-                                if (result[0].stock_quantity === 0) {
+                                if (result[i].stock_quantity === 0) {
                                     console.log("Sorry, we are out of stock!");
                                     process.exit();
                                 }
-                                if (cash >= result[0].price) {
-                                    var total = cash - result[0].price;
-                                    console.log("Thank you for purchasing our " + result[0].product_name)
+                                if (cash >= result[i].price) {
+                                    var total = cash - result[i].price;
+                                    console.log("Thank you for purchasing our " + result[i].product_name)
                                     console.log("You have $" + total + " remaining!")
                                     con.query("UPDATE products SET stock_quantity = stock_quantity - 1 WHERE item_id = '1'")
                                 }
