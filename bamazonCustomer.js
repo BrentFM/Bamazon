@@ -43,6 +43,12 @@ var cash = 0;
                             price = "$" + result[i].price,
                             stock_quantity = result[i].stock_quantity;
 
+                            if (result[i].price <= cash) {
+                                price = "$".green + colors.green(result[i].price)
+                            }
+                            if (result[i].price > cash) {
+                                price = "$".red + colors.red(result[i].price)
+                            }
                         table.push(
                             [item_id, product_name, department_name, price, stock_quantity]
                         );
