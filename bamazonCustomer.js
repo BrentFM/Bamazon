@@ -1,14 +1,8 @@
 var con = require("./mysql");
 var inquirer = require("inquirer");
-const boxen = require('boxen');
-var cash = 500;
-
-con.connect(function (err) {
-    if (err) throw err;
-    con.query("SELECT * FROM products", function (err, result, fields) {
-        if (err) throw err;
-        //   console.log(result)
-
+var Table = require('cli-table');
+var colors = require('colors');
+var cash = 0;
 
         inquirer.prompt([
 
@@ -16,72 +10,150 @@ con.connect(function (err) {
                 type: "input",
                 name: "name",
                 message: "What is your name?"
-            },{
+            }, {
                 type: "input",
                 name: "cash",
                 message: "How much cash do you have?"
             }
         ])
-        .then(function (user) {
-            cash = user.cash
-            if (user) {
-                console.log(boxen('Welcome to Bamazon, ' + user.name + "\n" + "You have $" + cash + " to spend", { padding: 1, margin: 1, borderStyle: 'double' }));
+            .then(function (user) {
+                cash = user.cash
+                if (user.name) {
+                    console.log("\n" + 'Welcome to Bamazon, ' + user.name + "\n" + "You have $" + cash + " to spend");
+                    inventory();
+                }
+            })
+
+        function inventory() {
+            var table = new Table({
+                head: ['Item ID'.blue, 'Product Name'.blue, 'Department Name'.blue, 'Price'.blue, 'Stock'.blue],
+                colWidths: [10, 20, 20, 20, 10]
+            });
+            listInventory();
+            function listInventory() {
+                con.query("SELECT * FROM products", function (err, result) {
+                    if (err) {
+                        console.log("An error occurred!")
+                    }
+                    for (var i = 0; i < result.length; i++) {
+
+                        var item_id = result[i].item_id,
+                            product_name = result[i].product_name,
+                            department_name = result[i].department_name,
+                            price = "$" + result[i].price,
+                            stock_quantity = result[i].stock_quantity;
+
+                        table.push(
+                            [item_id, product_name, department_name, price, stock_quantity]
+                        );
+                    }
+                    console.log("\n" + "============================= Current Bamazon Inventory =============================" + "\n");
+                    console.log(table.toString()  + "\n");
+                    purchaseQuestion();
+                })
+            }
+        }
+
+        function purchaseQuestion() {
+
+            inquirer.prompt([{
+
+                type: "confirm",
+                name: "confirm",
+                message: "Would you like to purchase an item?",
+                default: true
+
+            }]).then(function (user) {
+                if (user.confirm === true) {
+                    itemIdSearch();
+                } else {
+                    console.log("Thank you! Come back soon!");
+                }
+            });
+
+            function itemIdSearch() {
+                inquirer.prompt([{
+
+                    type: "input",
+                    name: "purchaseID",
+                    message: "Please enter the ID number of the item you would like to purchase.",
+                },
+                {
+                    type: "input",
+                    name: "purchaseUnits",
+                    message: "How many units of this item would you like to purchase?",
+
+                }
+                ]).then(function (userPurchase) {
+                    con.query("SELECT * FROM products WHERE item_id=?", userPurchase.purchaseID, function (err, result) {
+                        if (err) {
+                            console.log("An error occurred!")
+                        }
+                        for (var i = 0; i < result.length; i++) {
+
+                            if (userPurchase.purchaseUnits > result[i].stock_quantity) {
+
+                                console.log("===========================");
+                                console.log("Sorry, we are out of stock!".red);
+                                console.log("===========================");
+                                con.end()
+
+                            } else {
+                                console.log("===========================");
+                                console.log("You've selected:");
+                                console.log("----------------");
+                                console.log("Item: " + result[i].product_name);
+                                console.log("Price: $" + result[i].price);
+                                console.log("Quantity: " + userPurchase.purchaseUnits);
+                                console.log("----------------");
+                                console.log("Total: $" + result[i].price * userPurchase.purchaseUnits);
+                                console.log("===========================");
+
+                                if (cash < result[i].price) {
+                                    console.log("Sorry, you dont have enough to buy this! \n".red)
+                                    con.end();
+                                } else {
+
+                                var newStock = (result[i].stock_quantity - userPurchase.purchaseUnits);
+                                var purchaseId = (userPurchase.purchaseID);
+                                purchaseOrder(newStock, purchaseId);
+                                }
+                            }
+                        }
+                    });
+                });
+            }
+
+            // --- Confirm Purchase --- //
+
+            function purchaseOrder(newStock, purchaseId) {
 
                 inquirer.prompt([
                     {
-                        type: "list",
-                        pageSize: 100,
-                        message: "Here is our catalog!",
-                        choices: function() {
-                            var choiceArray = [];
-                            for (var i = 0; i < result.length; i++) {
-                              choiceArray.push(result[i].product_name + "\n" + "Current bid - $" + result[i].price + "\n");
-                            }
-                            return choiceArray;
-                          },
-                        name: "catalog"
-                    }
-                ]).then(function (user) {
-                    if (user.catalog) {
-                        inquirer.prompt([
-                            {
-                                type: "confirm",
-                                message: "Purchase?",
-                                name: "confirm",
-                                default: true
-                            }
-                        ]).then(function (user) {
-                            if (user.confirm === false) {
-                                console.log("Please come again soon!");
-                                process.exit();
-                            }
-                            if (user.confirm === true) {
-                                if (cash < result[i].price) {
-                                    console.log("Sorry, you dont have enough to buy this!");
-                                    process.exit();
-                                }
-                                if (result[i].stock_quantity === 0) {
-                                    console.log("Sorry, we are out of stock!");
-                                    process.exit();
-                                }
-                                if (cash >= result[i].price) {
-                                    var total = cash - result[i].price;
-                                    console.log("Thank you for purchasing our " + result[i].product_name)
-                                    console.log("You have $" + total + " remaining!")
-                                    con.query("UPDATE products SET stock_quantity = stock_quantity - 1 WHERE item_id = '1'")
-                                }
-                                
-                            }
-                        })
-                    }
-                })
+                    type: "confirm",
+                    name: "confirmPurchase",
+                    message: "Does this complete your order?",
+                    default: true
+                }
+            ]).then(function (userConfirm) {
+                    if (userConfirm.confirmPurchase === true) {
+                        con.query("UPDATE products SET ? WHERE ?", [{
+                            stock_quantity: newStock
+                        }, {
+                            item_id: purchaseId
+                        }
+                        ]);
 
+                        console.log("===========================");
+                        console.log("Order completed! Thank you!");
+                        console.log("===========================");
+                        con.end();
+                    } else {
+                        console.log("===========================");
+                        console.log("Please come again soon!");
+                        console.log("===========================");
+                        con.end();
+                    }
+                });
             }
-
-        })
-
-
-
-
-    });
-});
+        }
