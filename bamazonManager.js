@@ -17,7 +17,6 @@ inquirer.prompt([
 
 function managerMenu() {
     inquirer.prompt([
-
         {
             type: "list",
             message: "Menu Selection",
@@ -25,6 +24,48 @@ function managerMenu() {
             name: "managermenu"
         }
     ]).then(function (managerView) {
+        if (managerView.managermenu === "Add New Product") {
+            inquirer.prompt([
+                {
+                type: "input",
+                name: "addproduct_name",
+                message: "What is the product name you want to add?",
+            },
+            {
+                type: "input",
+                name: "addproduct_department",
+                message: "What is the department name?",
+            },
+            {
+                type: "input",
+                name: "addproduct_price",
+                message: "What is the price?",
+            },
+            {
+                type: "input",
+                name: "addproduct_stock",
+                message: "What is the stock amount?",
+            },
+            ]).then(function (addproduct) {
+                if (addproduct) {
+                    var add_name = addproduct.addproduct_name;
+                    var add_department = addproduct.addproduct_department;
+                    var addproduct_price = addproduct.addproduct_price;
+                    var addproduct_stock = addproduct.addproduct_stock;
+                    con.query("INSERT INTO products SET ?",
+                    {
+                        product_name: add_name,
+                        department_name: add_department,
+                        price: addproduct_price,
+                        stock_quantity: addproduct_stock
+                    }
+                    );
+                    console.log("\n" + "Product Added! \n".green)
+                    con.end();
+                }
+            })
+        }
+
         if (managerView.managermenu === "View Products for Sale") {
             var table = new Table({
                 head: ['Item ID'.blue, 'Product Name'.blue, 'Department Name'.blue, 'Price'.blue, 'Stock'.blue],
@@ -85,6 +126,7 @@ function managerMenu() {
                 })
             }
         }
+
         function managerInventory(updatedstock) {
             inquirer.prompt([
                 {
@@ -119,3 +161,4 @@ function managerMenu() {
 
     })
 }
+
