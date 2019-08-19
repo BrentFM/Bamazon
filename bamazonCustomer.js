@@ -151,8 +151,7 @@ var cash = 0;
                         ]);
 
                         console.log("===========================");
-                        console.log("Order completed! Thank you!");
-                        console.log("===========================");
+                        console.log("Order completed! Thank you! \n".green);
                         con.end();
                     } else {
                         console.log("===========================");
