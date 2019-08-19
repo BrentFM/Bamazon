@@ -15,13 +15,15 @@ npm install cli-table
 ```
 
 ## Screenshots
-
-Main Customer screen
+Customer File
+Main screen
 ![Main Customer Screen](images/BCustomer1.png "Main Customer screen")
 
 Purchase screen
 ![Purchase screen](images/BCustomer2.png "Purchase screen")
 
+
+Manager File
 View products
 ![View products](images/BManager1.png "View products")
 
