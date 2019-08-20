@@ -1,7 +1,8 @@
 # Bamazon
 
-Customer Dashboard - Ability to purchase item from inventory depending on the cash amount you input
-Manager Dashboard - Ability to view products, increase inventory, & add new products
+#### Customer Dashboard - Ability to purchase item from inventory depending on the cash amount you input
+
+#### Manager Dashboard - Ability to view products, increase inventory, & add new products
 
 ## Installation
 
