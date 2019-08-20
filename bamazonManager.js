@@ -11,7 +11,7 @@ inquirer.prompt([
         message: "What is your name?"
     }
 ]).then(function (name) {
-    console.log("Welcome to the Manager Dashboard " + name.name + "!")
+    console.log("\n Welcome to the Manager Dashboard " + name.name + "! \n")
     managerMenu();
 })
 
@@ -27,25 +27,25 @@ function managerMenu() {
         if (managerView.managermenu === "Add New Product") {
             inquirer.prompt([
                 {
-                type: "input",
-                name: "addproduct_name",
-                message: "What is the product name you want to add?",
-            },
-            {
-                type: "input",
-                name: "addproduct_department",
-                message: "What is the department name?",
-            },
-            {
-                type: "input",
-                name: "addproduct_price",
-                message: "What is the price?",
-            },
-            {
-                type: "input",
-                name: "addproduct_stock",
-                message: "What is the stock amount?",
-            },
+                    type: "input",
+                    name: "addproduct_name",
+                    message: "What is the product name you want to add?",
+                },
+                {
+                    type: "input",
+                    name: "addproduct_department",
+                    message: "What is the department name?",
+                },
+                {
+                    type: "input",
+                    name: "addproduct_price",
+                    message: "What is the price?",
+                },
+                {
+                    type: "input",
+                    name: "addproduct_stock",
+                    message: "What is the stock amount?",
+                },
             ]).then(function (addproduct) {
                 if (addproduct) {
                     var add_name = addproduct.addproduct_name;
@@ -53,12 +53,12 @@ function managerMenu() {
                     var addproduct_price = addproduct.addproduct_price;
                     var addproduct_stock = addproduct.addproduct_stock;
                     con.query("INSERT INTO products SET ?",
-                    {
-                        product_name: add_name,
-                        department_name: add_department,
-                        price: addproduct_price,
-                        stock_quantity: addproduct_stock
-                    }
+                        {
+                            product_name: add_name,
+                            department_name: add_department,
+                            price: addproduct_price,
+                            stock_quantity: addproduct_stock
+                        }
                     );
                     console.log("\n" + "Product Added! \n".green)
                     con.end();
@@ -117,48 +117,41 @@ function managerMenu() {
                             table.push(
                                 [item_id, product_name, stock_quantity]
                             );
-                            var updatedstock = result[i].stock_quantity
-                        }                    }
+                        }
+                        var currentstock = result[i].stock_quantity
+                    }
                     console.log("\n" + "======== Current Bamazon Inventory ======== \n");
                     console.log(table.toString());
                     console.log("Products less than 4 in stock are shown here!".red + "\n")
-                    managerInventory(updatedstock);
+                    managerInventory(currentstock);
                 })
             }
         }
 
-        function managerInventory(updatedstock) {
+        function managerInventory(currentstock) {
             inquirer.prompt([
                 {
-                type: "input",
-                name: "inventoryID",
-                message: "Please enter the ID number of the item you want to adjust.",
-            },
-            {
-                type: "input",
-                name: "inventory",
-                message: "How many would you like to add to the stock?",
-            }
+                    type: "input",
+                    name: "inventoryID",
+                    message: "Please enter the ID number of the item you want to adjust.",
+                },
+                {
+                    type: "input",
+                    name: "inventory",
+                    message: "Update the stock to what amount?",
+                }
             ]).then(function (stockadjust) {
-                con.query("SELECT * FROM products WHERE item_id=?", stockadjust.inventoryID, function (err, result) {
-                    if (err) {
-                        console.log("An error occurred!")
-                    } else {
-                        con.query("UPDATE products SET ? WHERE ?", [{
-                            stock_quantity: parseInt(updatedstock) + parseInt(stockadjust.inventory)
-                        }, {
-                            item_id: stockadjust.inventoryID
-                        }
-                        ]);
+                con.query("UPDATE products SET ? WHERE ?", [{
+                    stock_quantity: parseInt(stockadjust.inventory)
+                }, {
+                    item_id: stockadjust.inventoryID
+                }
+                ]);
+                console.log("\n" + "Inventory updated! \n".green)
+                con.end();
 
-                        console.log("\n" + "Inventory updated!".green)
-                        con.end();
-
-                    }
-                })
             })
         }
-
     })
 }
 
